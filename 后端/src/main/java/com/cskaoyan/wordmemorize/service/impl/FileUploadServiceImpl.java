@@ -24,6 +24,7 @@ public class FileUploadServiceImpl implements FileUploadService {
     private static final Logger log = LoggerFactory.getLogger(FileUploadServiceImpl.class);
 
     private static final String ENDPOINT = "oss-cn-wuhan-lr.aliyuncs.com";
+    // 此处原为个人阿里云 OSS AccessKey，已移除。使用前请替换 REDACTED。
     private static final String ACCESS_KEY_ID = "REDACTED";
     private static final String ACCESS_KEY_SECRET = "REDACTED";
     private static final String BUCKET_NAME = "wangdao-ysyword";

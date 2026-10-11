@@ -14,6 +14,7 @@ spring:
   # spring ai deepseek配置
   ai:
    openai:
+     # 此处原为个人 DeepSeek API Key，已移除。使用前请替换 REDACTED。
      api-key: REDACTED
      base-url: https://api.deepseek.com
      chat:
@@ -37,6 +38,7 @@ ali:
   oss:
     enable: true
     endpoint: oss-cn-beijing.aliyuncs.com
+    # 此处原为个人阿里云 OSS AccessKey，已移除。使用前请替换 REDACTED。
     accessKeyId: REDACTED
     accessKeySecret: REDACTED
     bucketName: cskaoyan-word
@@ -56,6 +58,7 @@ user:
     description: '3天及3天以上(由于短信成本较高,用户不会每天收到短信提醒)'
 # sms发送短息配置
 sms:
+    # 此处原为个人阿里云短信 AccessKey，已移除。使用前请替换 REDACTED。
     access-key-id: REDACTED
     access-key-secret: REDACTED
     sign: 背单词APP

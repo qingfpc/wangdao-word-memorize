@@ -5,6 +5,3 @@
 **/unpackage/
 **/.hvigor/
 **/build/
-
-# 密钥文件
-**/deepseek-apikey.txt

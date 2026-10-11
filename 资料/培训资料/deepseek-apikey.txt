@@ -1,0 +1,2 @@
+word-memorize-springboot
+# 此处原为个人 DeepSeek API Key，已移除。使用前请填入自己的 Key。
