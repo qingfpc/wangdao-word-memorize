@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper SYSTEM "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cskaoyan.wordmemorize.dao.mapper.ReviewTopicMapper">
+
+
+    <resultMap id="topicResultMap" type="com.cskaoyan.wordmemorize.dao.entity.ReviewTopicDO" autoMapping="true">
+        <id column="id" property="id"></id>
+        <collection property="options" ofType="com.cskaoyan.wordmemorize.dao.entity.TopicOptionDO" autoMapping="true">
+            <id column="option_id" property="id"/>
+        </collection>
+    </resultMap>
+
+<!--    <select id="getSingleChoiceTopicPageWithoutBook" resultMap="topicResultMap">-->
+<!--        select rt.id, rt.voc_Id, rt.topic_type, rt.topic, rt.vocabulary,-->
+<!--        top.id as option_id, top.tid, top.item, top.is_answer-->
+<!--        from (select id, voc_Id, topic_type, topic, vocabulary from review_topic where topic_type=1 and is_deleted=0-->
+<!--        limit #{limit} offset #{offset} ) rt-->
+<!--        inner join topic_options top on top.tid=rt.id and top.is_deleted=0-->
+<!--        <where>-->
+<!--            <if test="keyword != null and keyword.trim() != ''">-->
+<!--                rt.vocabulary LIKE #{keyword}-->
+<!--            </if>-->
+<!--        </where>-->
+<!--    </select>-->
+        <select id="getSingleChoiceTopicPageWithoutBook" resultType="com.cskaoyan.wordmemorize.dao.entity.ReviewTopicDO">
+            select id, voc_Id, topic_type, topic, vocabulary
+            from  review_topic
+            <where>
+                topic_type=1 and is_deleted=0
+                <if test="keyword != null and keyword.trim() != ''">
+                   and vocabulary LIKE #{keyword}
+                </if>
+            </where>
+            limit #{limit} offset #{offset}
+        </select>
+
+    <select id="getSingleChoiceTopicPageWithoutBookCount" resultType="java.lang.Integer">
+        select count(*)
+        from review_topic
+        <where>
+            topic_type=1 and is_deleted=0
+            <if test="keyword != null and keyword.trim() != ''">
+               and vocabulary LIKE #{keyword}
+            </if>
+        </where>
+    </select>
+
+    <select id="getSingleChoiceTopicPageWithBook" resultType="com.cskaoyan.wordmemorize.dao.entity.ReviewTopicDO">
+        select rt.id, rt.voc_Id, rt.topic_type, rt.topic, rt.vocabulary
+        from review_topic rt
+        inner join voc_chap_book vcb on rt.voc_id=vcb.voc_id
+        where
+            vcb.book_id = #{bookId}
+            <if test="chapterId!= null">
+                and vcb.chapter_id = #{chapterId}
+            </if>
+            <if test="keyword != null">
+                and ( rt.vocabulary LIKE #{keyword})
+            </if>
+        and rt.is_deleted = 0 and vcb.is_deleted = 0
+        limit #{limit} offset #{offset}
+    </select>
+
+    <select id="getSingleChoiceTopicPageWithBookCount" resultType="java.lang.Integer">
+        select count(*)
+        from review_topic rt
+        inner join voc_chap_book vcb on rt.voc_id=vcb.voc_id
+        where
+        vcb.book_id = #{bookId}
+        <if test="chapterId!= null">
+            and vcb.chapter_id = #{chapterId}
+        </if>
+        <if test="keyword != null">
+            and ( rt.vocabulary LIKE #{keyword})
+        </if>
+        and rt.is_deleted = 0 and vcb.is_deleted = 0
+    </select>
+
+
+
+    <select id="getFillWordTopicPageWithBook" resultType="java.lang.Long">
+        select tmp.tid
+        from (
+        select rst.tid
+        from review_sub_topic rst inner join voc_chap_book vcb on vcb.book_id = #{bookId} and rst.voc_id=vcb.voc_id and
+        rst.is_deleted=0
+        <where>
+            <if test="chapterId != null">
+                and vcb.chapter_id = #{chapterId}
+            </if>
+            <if test="keyword != null">
+                and ( rst.vocabulary LIKE #{keyword})
+            </if>
+        </where>
+        group by rst.tid
+        ) tmp limit #{limit} offset #{offset}
+    </select>
+
+    <select id="getFillWordTopicPageWithBookCount" resultType="java.lang.Integer">
+        select count(*)
+        from (
+            select rst.tid
+            from review_sub_topic rst inner join voc_chap_book vcb on vcb.book_id = #{bookId} and rst.voc_id=vcb.voc_id and rst.is_deleted=0
+            <where>
+            <if test="chapterId != null">
+                and vcb.chapter_id = #{chapterId}
+            </if>
+            <if test="keyword != null">
+                and ( rst.vocabulary LIKE #{keyword})
+            </if>
+            </where>
+            group by rst.tid
+        ) tmp
+    </select>
+
+    <select id="getFillWordTopicPageWithoutBook" resultType="java.lang.Long">
+        select tmp.tid
+        from (
+        select rst.tid
+        from review_sub_topic rst
+        <where>
+            rst.is_deleted=0
+            <if test="keyword != null">
+                and ( rst.vocabulary LIKE #{keyword})
+            </if>
+        </where>
+        group by rst.tid
+        ) tmp limit #{limit} offset #{offset}
+    </select>
+
+    <select id="getFillWordTopicPageWithoutBookCount" resultType="java.lang.Integer">
+        select count(*)
+        from (
+            select rst.tid
+            from review_sub_topic rst
+            <where>
+                rst.is_deleted=0
+                <if test="keyword != null">
+                    and ( rst.vocabulary LIKE #{keyword})
+                </if>
+            </where>
+            group by rst.tid
+        ) tmp
+    </select>
+
+</mapper>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper SYSTEM "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cskaoyan.wordmemorize.dao.mapper.UserCheckinStatisticsMapper">
+
+    <update id="updateCheckinStatistics">
+        update user_checkin_statistics
+        set max_continuous_days = #{statisticInfo.maxContinuousDays},
+        max_continuous_start_date = #{statisticInfo.maxContinuousStartDate},
+        cur_continuous_days = #{statisticInfo.curContinuousDays},
+        cur_continuous_start_date = #{statisticInfo.curContinuousStartDate},
+        total_days = total_days + #{count}
+        where user_id = #{statisticInfo.userId}
+    </update>
+
+</mapper>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper SYSTEM "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cskaoyan.wordmemorize.dao.mapper.UserVocAISituationMapper">
+
+
+    <resultMap id="getAIReadSituationInfoMap" type="com.cskaoyan.wordmemorize.dao.entity.UserVocAISituationDO" autoMapping="true">
+       <id column="id" property="id"/>
+        <collection property="options" ofType="com.cskaoyan.wordmemorize.dao.entity.UserVocAISituationOptionDO" autoMapping="true">
+            <id column="oid" property="id"/>
+            <result column="option_name" property="name"/>
+            <result column="option_description" property="description"/>
+        </collection>
+    </resultMap>
+
+    <select id="getAIReadSituationInfo" resultMap="getAIReadSituationInfoMap">
+        select uvas.id, uvas.name, uvas.status, uvas.description, uvaso.id as oid, uvaso.situation_id, uvaso.name as option_name,
+               uvaso.description as option_description
+        from user_voc_ai_situation uvas inner join user_voc_ai_situation_option uvaso on uvas.id=uvaso.situation_id
+        where uvas.status = 1 and uvaso.is_deleted=0
+    </select>
+
+    <select id="getAISituationPage" resultMap="getAIReadSituationInfoMap">
+       select  uvas.id, uvas.name, uvas.status, uvas.description, uvaso.id as oid, uvaso.situation_id, uvaso.name as option_name,
+               uvaso.description as option_description
+        from ( select id, name, status, description, is_deleted from user_voc_ai_situation where is_deleted=0 limit #{offset}, #{limit}) as uvas
+        left join user_voc_ai_situation_option uvaso on uvas.id=uvaso.situation_id and uvaso.is_deleted=0
+        where uvas.is_deleted=0
+    </select>
+</mapper>

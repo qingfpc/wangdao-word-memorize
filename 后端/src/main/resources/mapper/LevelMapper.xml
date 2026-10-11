@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- LevelMapper.xml -->
+<mapper namespace="com.cskaoyan.wordmemorize.dao.mapper.LevelMapper">
+    <select id="selectLevelsWithGoods" resultType="map">
+        SELECT l.*,
+        g.id AS relation_goods_id
+        FROM level l
+        LEFT JOIN goods g ON l.level_value = g.value AND g.type = 2 AND g.is_deleted = 0
+        WHERE l.is_deleted = 0
+        ORDER BY l.level_value ASC
+    </select>
+</mapper>
+
+<!--<mapper namespace="com.cskaoyan.wordmemorize.dao.mapper.LevelMapper">-->
+<!--    <select id="selectLevelsWithGoods" resultMap="levelResultMap">-->
+<!--        SELECT-->
+<!--        l.*,-->
+<!--        g.id AS relation_goods_id  &lt;!&ndash; 使用别名避免冲突 &ndash;&gt;-->
+<!--        FROM level l-->
+<!--        LEFT JOIN goods g ON l.level_value = g.value AND g.type = 2-->
+<!--        WHERE l.is_deleted = 0-->
+<!--    </select>-->
+
+<!--    <resultMap id="levelResultMap" type="com.cskaoyan.wordmemorize.dao.entity.LevelDO">-->
+<!--        <id property="id" column="id"/>-->
+<!--        &lt;!&ndash; 其他基础字段映射... &ndash;&gt;-->
+<!--        <result property="goodsId" column="goods_id"/> &lt;!&ndash; 新增goodsId映射 &ndash;&gt;-->
+<!--    </resultMap>-->
+<!--</mapper>-->

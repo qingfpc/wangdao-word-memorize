@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper SYSTEM "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cskaoyan.wordmemorize.dao.mapper.UserMapper">
+
+    <sql id="user_column">
+        u.id, u.nick_name, u.head_img, u.phone_number, u.third_party_name,
+            u.level_name, u.level_value, u.level_date,u.birthday, u.email,
+            u.voc_count_of_day, u.has_sign_card
+    </sql>
+    <resultMap id="userInfoMap" type="com.cskaoyan.wordmemorize.dao.entity.UserDO" autoMapping="true">
+        <id column="id" property="id"/>
+        <collection property="privilegeCodes" ofType="String">
+            <id column="privilege_code" property="privilege_code"/>
+        </collection>
+    </resultMap>
+
+    <select id="getUserInfo" resultMap="userInfoMap">
+        select<include refid="user_column"/>, lp.privilege_code
+        from user u left join level l on u.level_value >= l.level_value
+        left join level_privilege lp on l.id=lp.level_id
+        where u.id=#{userId} and l.is_deleted=0 and (lp.is_deleted=0 or lp.is_deleted is null)
+    </select>
+
+
+    <select id="getNextLevelInfo" resultType="com.cskaoyan.wordmemorize.dao.entity.LevelDO">
+        select l.level_value, check_in_days, check_in_type
+        from level l
+        where l.level_value = (select level_value + 1 from user u where u.id = #{userId}) and l.is_deleted=0
+    </select>
+
+    <resultMap id="getLevelInfoMap" type="com.cskaoyan.wordmemorize.dao.entity.LevelDO" autoMapping="true">
+        <id column="id" property="id"/>
+        <collection property="levelPrivileges" ofType="com.cskaoyan.wordmemorize.dao.entity.LevelPrivilegeDO"
+                    autoMapping="true">
+            <id column="lp_id" property="id"/>
+            <result column="lp_desc" property="description"/>
+        </collection>
+    </resultMap>
+    <select id="getLevelInfo" resultMap="getLevelInfoMap">
+        select l.id
+             , l.level_name
+             , l.level_value
+             , l.check_in_days
+             , l.check_in_type
+             , l.unlock_price
+             , l.description
+             , lp.id          lp_id
+             , lp.level_id
+             , lp.image_name
+             , lp.description lp_desc
+             , lp.privilege_code
+             , lp.privilege_name
+             , lp.use_type
+             , lp.free_count
+        from level l
+                 left join level_privilege lp on l.id = lp.level_id
+        where l.is_deleted = 0 and lp.is_deleted = 0
+    </select>
+
+    <select id="getUserChooseCountInBook" resultType="java.lang.Integer">
+        select count(*) as count
+        from voc_chap_book vcb
+                 inner join user_voc_rev uvc on vcb.book_id = #{bookId} and vcb.voc_id = uvc.voc_id
+        where uvc.user_id = #{userId}
+          and uvc.is_deleted = 0
+          and vcb.is_deleted = 0
+    </select>
+
+
+    <resultMap id="vocsInfoContainsUserOwnMap" type="com.cskaoyan.wordmemorize.dao.entity.VocChapterDO"
+               autoMapping="true">
+        <id column="chapter_id" property="id"/>
+        <collection property="vocs" ofType="com.cskaoyan.wordmemorize.dao.entity.VocDO" autoMapping="true">
+            <id property="id" column="voc_id"/>
+            <collection property="interpretations"
+                        ofType="com.cskaoyan.wordmemorize.dao.entity.VocMeaningDO" autoMapping="true">
+                <id column="mid" property="id"/>
+            </collection>
+        </collection>
+    </resultMap>
+
+
+    <select id="getChapterVocsOfUserBook" resultMap="vocsInfoContainsUserOwnMap">
+        select vcb.chapter_id,
+               vcb.chapter_name,
+               vcb.voc_id,
+               vcb.voc_name as              content,
+               if(uvr.voc_id is null, 0, 1) reviewed,
+               if(unr.voc_id is null, 0, 1) not_remember,
+               vm.id        as              mid,
+               vm.type,
+               vm.inter_content
+        from (select vcb.chapter_id
+              from voc_chap_book vcb
+              where vcb.book_id = #{bookId}
+                and is_deleted = 0
+              group by vcb.chapter_id
+<!--              <if test="offset != null and limit != null">-->
+<!--                  limit #{offset},#{limit}-->
+<!--              </if>-->
+            ) bc
+
+                 inner join voc_chap_book vcb on vcb.book_id = #{bookId} and bc.chapter_id = vcb.chapter_id and vcb.is_deleted=0
+                 left join voc_meaning vm on vm.voc_id = vcb.voc_id and vm.is_deleted = 0
+                 left join user_voc_rev uvr
+                           on uvr.user_id = #{userId} and uvr.voc_id = vcb.voc_id and uvr.is_deleted = 0
+                 left join user_not_remember unr
+                           on unr.user_id = #{userId} and unr.voc_id = vcb.voc_id and unr.is_deleted = 0
+    </select>
+
+    <resultMap id="vocsInfoContainsUserOwnMapWithoutChapter" type="com.cskaoyan.wordmemorize.dao.entity.VocDO"
+               autoMapping="true">
+        <id property="id" column="voc_id"/>
+        <collection property="interpretations"
+                    ofType="com.cskaoyan.wordmemorize.dao.entity.VocMeaningDO" autoMapping="true">
+            <id column="mid" property="id"/>
+        </collection>
+    </resultMap>
+    <select id="getVocsOfUserBook" resultMap="vocsInfoContainsUserOwnMapWithoutChapter">
+        select bc.voc_id,
+               bc.voc_name as               content,
+               if(uvr.voc_id is null, 0, 1) reviewed,
+               if(unr.voc_id is null, 0, 1) not_remember,
+               vm.id        as              mid,
+               vm.type,
+               vm.inter_content
+        from (select vcb.voc_id, vcb.voc_name, vcb.is_deleted
+              from voc_chap_book vcb
+              where vcb.book_id = #{bookId}
+                and is_deleted = 0
+<!--                <if test="offset != null and limit != null">-->
+<!--                    limit #{offset},#{limit}-->
+<!--                </if>-->
+               ) bc
+                 left join voc_meaning vm on vm.voc_id = bc.voc_id and vm.is_deleted = 0
+                 left join user_voc_rev uvr on uvr.user_id = #{userId} and uvr.voc_id = bc.voc_id and uvr.is_deleted = 0
+                 left join user_not_remember unr
+                           on unr.user_id = #{userId} and unr.voc_id = bc.voc_id and unr.is_deleted = 0
+    </select>
+
+
+</mapper>

@@ -1,0 +1,104 @@
+{
+  "float": [
+    {
+      "name": "page_text_font_size",
+      "value": "50fp"
+    },{
+      "name": "current_book_status_font_size",
+      "value": "15vp"
+    },
+    {
+      "name": "setting_account_size",
+      "value": "60vp"
+    },
+    {
+      "name": "setting_account_fontSize",
+      "value": "16fp"
+    },
+    {
+      "name": "setting_level_fontSize",
+      "value": "12fp"
+    },
+    {
+      "name": "setting_list_startMargin",
+      "value": "42vp"
+    },
+    {
+      "name": "setting_list_endMargin",
+      "value": "24vp"
+    },
+    {
+      "name": "setting_list_strokeWidth",
+      "value": "0.25vp"
+    },
+    {
+      "name": "setting_list_borderRadius",
+      "value": "16vp"
+    },
+    {
+      "name": "setting_list_padding",
+      "value": "4vp"
+    },
+    {
+      "name": "setting_size",
+      "value": "22vp"
+    },
+    {
+      "name": "normal_text_size",
+      "value": "16fp"
+    },
+    {
+      "name": "setting_jump_width",
+      "value": "12vp"
+    },
+    {
+      "name": "setting_jump_height",
+      "value": "24vp"
+    },
+    {
+      "name": "setting_settingCell_left",
+      "value": "8vp"
+    },
+    {
+      "name": "setting_settingCell_right",
+      "value": "22vp"
+    },
+    {
+      "name": "setting_list_height",
+      "value": "48vp"
+    },
+    {
+      "name": "login_button_height",
+      "value": "40vp"
+    },
+    {
+      "name": "setting_button_bottom",
+      "value": "55vp"
+    },{
+      "name": "status_height",
+      "value": "40vp"
+    },{
+      "name": "calendar_size",
+      "value": "43vp"
+    },
+    {
+      "name": "text_regular",
+      "value": "16fp"
+    },
+    {
+      "name": "text_emphasis",
+      "value": "18fp"
+    },
+    {
+      "name": "text_small",
+      "value": "14fp"
+    },{
+      "name": "list_item_height",
+      "value": "48vp"
+    },
+    {
+      "name": "text_line_regular",
+      "value": "18vp"
+    }
+  ]
+}

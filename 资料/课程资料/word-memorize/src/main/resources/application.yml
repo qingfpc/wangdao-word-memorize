@@ -1,0 +1,77 @@
+# 启动端口
+server:
+  port: 8111
+spring:
+  application:
+    # 应用名称
+   name: word-memorize
+  # 数据库配置
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/my_words?characterEncoding=utf8&serverTimezone=GMT%2B8&useSSL=false&allowPublicKeyRetrieval=true
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: 1234
+  # spring ai deepseek配置
+  ai:
+   openai:
+     api-key: REDACTED
+     base-url: https://api.deepseek.com
+     chat:
+       options:
+         model: deepseek-chat
+         temperature: 0.7
+     client:
+        connect-timeout: 60s
+        read-timeout: 120s
+  main:
+    # 支持循环依赖注入
+    allow-circular-references: true
+logging:
+  level:
+    com.cskaoyan.wordmemorize.dao.mapper: debug
+# mybatis-plus配置
+mybatis-plus:
+  mapper-locations: classpath:mapper/*.xml
+# oss配置
+ali:
+  oss:
+    enable: true
+    endpoint: oss-cn-beijing.aliyuncs.com
+    accessKeyId: REDACTED
+    accessKeySecret: REDACTED
+    bucketName: cskaoyan-word
+swagger:
+  enabled: true
+# spring-doc 接口文档
+springdoc:
+  api-docs:
+    enabled: true # 是否启用接口文档
+knife4j:
+  enable: true # 是否启用 knife4j 增强,如果只是使用 knife4j 的 UI,则可以关闭
+# 学习提醒配置
+user:
+  remind:
+    days: 3
+    span: 5
+    description: '3天及3天以上(由于短信成本较高,用户不会每天收到短信提醒)'
+# sms发送短息配置
+sms:
+    access-key-id: REDACTED
+    access-key-secret: REDACTED
+    sign: 背单词APP
+#    remind-template-code: SMS_476260381 这个模版是原来的模版
+    remind-template-code: SMS_154950909 # 这个模版是阿里云测试模版
+    end-point: dysmsapi.aliyuncs.com
+# excel配置
+excel:
+  template:
+    vocabulary:
+      path: classpath:templates/单词上传模版.xlsx
+
+
+
+
+
+
+
+

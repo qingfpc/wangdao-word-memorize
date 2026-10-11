@@ -1,0 +1,131 @@
+{
+  "color": [
+    {
+      "name": "start_window_background",
+      "value": "#FFFFFF"
+    },
+    {
+      "name": "mainPage_selected",
+      "value": "#1698CE"
+    },
+    {
+      "name": "mainPage_normal",
+      "value": "#6B6B6B"
+    },
+    {
+      "name": "words_base",
+      "value": "#1c00ff"
+    },
+    {
+      "name": "words_base_light",
+      "value": "#FFA1C4FF"
+    },
+    {
+      "name": "line_color",
+      "value": "#33182431"
+    },
+    {
+      "name": "book_words_divider",
+      "value": "#FFC8DAFF"
+    },
+    {
+      "name": "tab_icon",
+      "value": "#FF5B95FD"
+    },
+    {
+      "name": "chapter_vocabulary_divider",
+      "value": "#FFC3C3C3"
+    },
+    {
+      "name": "familiar_word_progress",
+      "value": "#FF07A42F"
+    },
+    {
+      "name": "general_word_progress",
+      "value": "#FFFC9854"
+    },
+    {
+      "name": "unfamiliar_word_progress",
+      "value": "#FFDD54FC"
+    },
+    {
+      "name": "voc_book_list",
+      "value": "#FFF3F3F3"
+    },{
+      "name": "current_book_status_font_color",
+      "value": "#FFC6C6C6"
+    },
+    {
+      "name": "book_category_list_divider",
+      "value": "#FF5B95FD"
+    },
+    {
+      "name": "login_more_text_color",
+      "value": "#99182431"
+    },
+    {
+      "name": "divider",
+      "value": "#FFFDFDFD"
+    },
+    {
+      "name": "setting_button_backgroundColor",
+      "value": "#E5E8EA"
+    },
+    {
+      "name": "setting_button_fontColor",
+      "value": "#FA2A2D"
+    },
+    {
+      "name": "color_score_a",
+      "value": "#FF5B95FD"
+    },
+    {
+      "name": "color_score_b",
+      "value": "#FFFC9854"
+    },
+    {
+      "name": "color_score_c",
+      "value": "#FFC1C1C1"
+    },
+    {
+      "name": "color_score_d",
+      "value": "#FFC1C1C1"
+    },
+    {
+      "name": "calendar_num_select_color",
+      "value": "#ffe53ce5"
+    },
+    {
+      "name": "divider_grey",
+      "value": "#E0E0E0"
+    },
+    {
+      "name": "primary_blue",
+      "value": "#007AFF"
+    },
+    {
+      "name": "text_primary",
+      "value": "#1A1A1A"
+    },
+    {
+      "name": "list_item_pressed",
+      "value": "#F5F5F5"
+    },
+    {
+      "name": "checkbox_border",
+      "value": "#E0E0E0"
+    },
+    {
+      "name": "text_secondary",
+      "value": "#666666"
+    },
+    {
+      "name": "list_item_bg",
+      "value": "#FFFFFF"
+    },
+    {
+      "name": "recite_word_font_color",
+      "value": "#FFFFFF"
+    }
+  ]
+}

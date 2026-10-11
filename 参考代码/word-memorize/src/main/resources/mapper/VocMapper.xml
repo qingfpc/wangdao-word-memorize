@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper SYSTEM "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cskaoyan.wordmemorize.dao.mapper.VocMapper">
+
+    <sql id="voc_columns">
+        v.id, v.content, v.uk_phonetic, v.us_phonetic, v.us_pronounciation, v.uk_pronounciation
+    </sql>
+    <sql id="voc_meaning_columns">
+        vm.id, vm.voc_id, vm.type, vm.inter_content
+    </sql>
+    <sql id="voc_example_sentence_columns">
+        es.id, es.voc_id, es.content, es.meaning
+    </sql>
+
+    <resultMap id="vocabularyInfoMap" type="com.cskaoyan.wordmemorize.dao.entity.VocDO" autoMapping="true">
+        <id column="id" property="id"/>
+        <collection property="interpretations" ofType="com.cskaoyan.wordmemorize.dao.entity.VocMeaningDO"
+                    select="getVocMeaning" column="id">
+        </collection>
+        <collection property="examples" ofType="com.cskaoyan.wordmemorize.dao.entity.ExampleSentenceDO"
+                    select="getVocExampleSentence" column="id">
+        </collection>
+    </resultMap>
+    <select id="getVocabularyInfo" resultMap="vocabularyInfoMap">
+        <choose>
+            <when test="bookId != null">
+                select
+                <include refid="voc_columns"/>
+                from voc_chap_book vcb inner join voc v on v.id=vcb.voc_id and vcb.book_id=#{bookId}
+                <where>
+                    v.is_deleted=0 and vcb.is_deleted=0
+                    <if test="chapterId != null">
+                        and vcb.chapter_id=#{chapterId}
+                    </if>
+                    <if test="keyword != null and keyword != ''">
+                        and v.content LIKE CONCAT('%', #{keyword}, '%')
+                    </if>
+                </where>
+            </when>
+            <otherwise>
+                select
+                <include refid="voc_columns"/>
+                from voc v
+                where is_deleted=0
+                <if test="keyword != null and keyword != ''">
+                    and v.content LIKE CONCAT('%', #{keyword}, '%')
+                </if>
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="getVocMeaning" resultType="com.cskaoyan.wordmemorize.dao.entity.VocMeaningDO">
+        select
+        <include refid="voc_meaning_columns"/>
+        from voc_meaning vm where vm.voc_id=#{id}
+    </select>
+
+    <select id="getVocExampleSentence" resultType="com.cskaoyan.wordmemorize.dao.entity.ExampleSentenceDO">
+        select
+        <include refid="voc_example_sentence_columns"/>
+        from example_sentence es where es.voc_id=#{id}
+    </select>
+
+
+
+    <resultMap id="vocDetailMap" type="com.cskaoyan.wordmemorize.dao.entity.VocDO" autoMapping="true">
+        <id property="id" column="id"/>
+        <collection property="interpretations" ofType="com.cskaoyan.wordmemorize.dao.entity.VocMeaningDO" autoMapping="true">
+            <id property="id" column="vm_id"/>
+        </collection>
+
+<!--        <collection property="userInterpretations"-->
+<!--                    ofType="com.cskaoyan.wordmemorize.dao.entity.UserVocMeaningDO"-->
+<!--                    select="getUserVocMeaning" column="id"/>-->
+
+        <collection property="examples" ofType="com.cskaoyan.wordmemorize.dao.entity.ExampleSentenceDO" autoMapping="true">
+            <id property="id" column="es_id"/>
+            <result property="content" column="es_content"/>
+        </collection>
+<!--        <collection property="userExamples"-->
+<!--                    ofType="com.cskaoyan.wordmemorize.dao.entity.UserExampleSentenceDO"-->
+<!--                    select="getUserVocExampleSentence" column="id"/>-->
+    </resultMap>
+<!--    <select id="getVocDetail" resultMap="vocDetailMap">-->
+<!--        select <include refid="voc_columns"/>, if(uvr.voc_id is null, 0, 1) reviewed, if(unr.voc_id is null, 0, 1) not_remember-->
+<!--        from vocabulary v-->
+<!--             left join user_voc_rev uvr on uvr.voc_id=v.id and uvr.is_deleted=0-->
+<!--             left join user_not_remember unr on unr.user_id=#{userId} and unr.voc_id=v.id and unr.is_deleted=0-->
+<!--        where v.id=#{vocId}-->
+<!--    </select>-->
+
+    <select id="getVocDetail" resultMap="vocDetailMap">
+        select v.id, v.content, v.uk_phonetic, v.us_phonetic, v.us_pronounciation, v.uk_pronounciation, vm.id as vm_id, vm.voc_id, vm.type, vm.inter_content
+             ,es.id as es_id, es.voc_id, es.content as es_content, es.meaning, if(uvr.voc_id is null, 0, 1) reviewed, if(unr.voc_id is null, 0, 1) not_remember
+        from voc v
+        left join voc_meaning vm on vm.voc_id=v.id and v.is_deleted=0 and vm.is_deleted=0
+        left join example_sentence es on es.voc_id=v.id and es.is_deleted=0
+        left join user_voc_rev uvr on uvr.user_id=#{userId} and uvr.voc_id=v.id and uvr.is_deleted=0
+        left join user_not_remember unr on unr.user_id=#{userId} and unr.voc_id=v.id and unr.is_deleted=0
+        where v.id=#{vocId}
+    </select>
+
+    <select id="getUserVocExampleSentence" resultType="com.cskaoyan.wordmemorize.dao.entity.UserVocExampleSentenceDO">
+        select uvs.id, uvs.user_id, uvs.voc_id, uvs.sentence, uvs.meaning
+        from user_voc_sentence uvs
+        where user_id=#{userId} and voc_Id=#{vocId} and is_deleted=0
+    </select>
+
+    <select id="getUserChooseCountInBook" resultType="Integer">
+        select count(*)
+        from (select voc_id from user_voc_rev where user_id=#{userId}) tmp
+            inner join voc_chap_book vcb on vcb.book_id=#{bookId} and vcb.voc_id=tmp.voc_id
+    </select>
+
+    <update id="updateBookVocCount">
+        update voc_book
+        set voc_count= voc_count + #{count}
+        where id=#{bookId}
+    </update>
+
+    <update id="updateChapterVocCount">
+        update voc_chapter
+        set voc_count= voc_count + #{count}
+        where id=#{chapterId}
+    </update>
+</mapper>

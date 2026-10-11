@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cskaoyan.wordmemorize.dao.mapper.UserVocRevMapper">
+    <!-- 实现查询用户已选单词复习数据的 SQL 语句 -->
+    <select id="selectUserVocRevData" resultType="com.cskaoyan.wordmemorize.dao.entity.UserVocRevDO">
+        SELECT * FROM user_voc_rev
+        WHERE user_id = #{userId}
+        LIMIT #{offset}, #{count}
+    </select>
+    <!-- 实现查询指定用户的单词复习数据总数的 SQL 语句 -->
+    <select id="selectUserVocRevDataCount" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM user_voc_rev
+        WHERE user_id = #{userId}
+    </select>
+
+    <!-- 根据用户 ID 和单词 ID 查询用户单词复习数据 -->
+    <select id="selectByUserIdAndVocId" resultType="com.cskaoyan.wordmemorize.dao.entity.UserVocRevDO">
+        SELECT * FROM user_voc_rev
+        WHERE user_id = #{userId} AND voc_id = #{vocId}
+    </select>
+
+    <select id="countByUserIdAndVocId" resultType="int">
+        SELECT COUNT(*) FROM user_voc_rev
+        WHERE user_id = #{userId} AND voc_id = #{vocId} AND is_deleted = 0
+    </select>
+
+    <insert id="upsertUserVocRev" parameterType="com.cskaoyan.wordmemorize.dao.entity.UserVocRevDO">
+        INSERT INTO user_voc_rev
+        (id, user_id, voc_id, factor, review_interval, type, familiarity, consecutive_fail_count, total_review)
+        VALUES
+        (#{userVocRevDO.id}, #{userVocRevDO.userId}, #{userVocRevDO.vocId}, #{userVocRevDO.factor}, #{userVocRevDO.reviewInterval},
+         #{userVocRevDO.type}, #{userVocRevDO.familiarity}, #{userVocRevDO.consecutiveFailCount}, #{userVocRevDO.totalReview})
+        ON DUPLICATE KEY UPDATE
+            factor = VALUES(factor),
+            review_interval = VALUES(review_interval),
+            type = VALUES(type),
+            familiarity = VALUES(familiarity),
+            consecutive_fail_count = VALUES(consecutive_fail_count),
+            total_review = VALUES(total_review)
+    </insert>
+</mapper>

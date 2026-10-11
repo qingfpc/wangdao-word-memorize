@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper SYSTEM "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cskaoyan.wordmemorize.dao.mapper.UserCheckinMapper">
+
+    <select id="getMaxContinuousCheckinInfo" resultType="com.cskaoyan.wordmemorize.dao.entity.UserCheckinStatisticsDO">
+
+        select min(sign_date) as maxContinuousStartDate, count(*) as maxContinuousDays
+        from user_checkin
+        where user_id = #{userId}
+        <if test="preLevelDate != null">
+            and sign_date > #{preLevelDate}
+        </if>
+        group by stick_no
+        order by maxContinuousDays desc
+        limit 1
+    </select>
+
+    <select id="getLatestContinuousCheckinInfo" resultType="com.cskaoyan.wordmemorize.dao.entity.UserCheckinStatisticsDO">
+        select min(sign_date) as curContinuousStartDate, count(*) as curContinuousDays
+        from user_checkin
+        where user_id = #{userId} and stick_no = (select stick_no from user_checkin where user_id=#{userId} and sign_date=#{targetDate})
+    </select>
+
+
+    <select id="getTotalCheckinDaysFromPrevLevel" resultType="Integer">
+        select count(*) from user_checkin uc
+        where uc.user_id = #{userId} and uc.sign_date > (select level_date from user u where u.id=#{userId})
+    </select>
+
+    <select id="getStartDateByStickNo" resultType="java.time.LocalDate">
+        select min(sign_date) from user_checkin uc
+        where uc.user_id = #{userId} and uc.stick_no=#{stickNo} and uc.sign_date > (select level_date from user u where u.id=#{userId})
+    </select>
+
+    <select id="getPreviousContinuousInfo" resultType="com.cskaoyan.wordmemorize.dao.entity.UserCheckStickDO">
+        select min(uc.sign_date) curContinuousStartDate, count(*) curContinuousDays, uc.stick_no
+        from user_checkin uc
+        where user_id = #{userId}
+        group by stick_no
+        having stick_no = (select stick_no
+                           from user_checkin
+                           where user_id = #{userId}
+                             and sign_date &lt; #{targetData}
+                            order by sign_date desc limit 1)
+    </select>
+
+    <select id="getLatestSignDateWithDays" resultType="java.time.LocalDate">
+       select max(sign_date) from (
+            select sign_date from user_checkin uc
+            <where>
+                uc.user_id = #{userId}
+                <if test="fromDate != null">
+                    uc.sign_date > #{fromDate}
+                </if>
+            </where>
+            <if test="days != null">
+                limit #{days}
+            </if>
+        ) tmp
+    </select>
+
+
+    <select id="getStickInfoContainsDate" resultType="com.cskaoyan.wordmemorize.dao.entity.UserCheckStickDO">
+        select min(sign_date) as curContinuousStartDate, count(*) as curContinuousDays, stick_no
+        from user_checkin
+        where user_id = #{userId}
+        group by stick_no
+        having stick_no = (select stick_no from user_checkin where user_id=#{userId} and sign_date=#{targetDate})
+    </select>
+
+    <insert id="addResignCheckinRecord" parameterType="com.cskaoyan.wordmemorize.dao.entity.UserCheckinDO">
+        insert into user_checkin(id, user_id, sign_date, stick_no, type)
+        values
+            <foreach collection="list" item="item" separator=",">
+                (#{item.id}, #{item.userId}, #{item.signDate}, #{item.stickNo}, #{item.type})
+            </foreach>
+        on duplicate key update
+        stick_no = values(stick_no),
+        type = values(type)
+    </insert>
+
+</mapper>

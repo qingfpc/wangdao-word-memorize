@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper SYSTEM "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cskaoyan.wordmemorize.dao.mapper.UserVocBoundStatisticsMapper">
+
+    <update id="rewardUserVocBound">
+       update user_voc_bound_statistics
+       set free= free + #{reward},
+       total = total + #{reward},
+       available = available + #{reward}
+       where user_id=#{userId}
+    </update>
+
+    <update id="payUserVocBound">
+        update user_voc_bound_statistics
+        set pay= pay + #{amount},
+        total = total + #{amount},
+        available = available + #{amount}
+        where user_id=#{userId}
+    </update>
+
+
+    <update id="exchangeUserVocBound" >
+        update user_voc_bound_statistics
+        set exchange= exchange + #{amount},
+        available = available - #{amount},
+        occupied = occupied + #{amount}
+        where user_id=#{userId}
+    </update>
+
+    <update id="updateOccupiedUserVocBound">
+        update user_voc_bound_statistics
+        set occupied = occupied + #{occupied},
+        available = available - #{occupied}
+        where user_id=#{userId}
+    </update>
+
+
+</mapper>

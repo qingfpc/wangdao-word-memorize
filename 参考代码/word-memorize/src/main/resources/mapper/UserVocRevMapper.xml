@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper SYSTEM "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cskaoyan.wordmemorize.dao.mapper.UserVocRevMapper">
+
+    <select id="getUserVocRevWithBook" resultType="com.cskaoyan.wordmemorize.dao.entity.UserVocRevDO">
+       select uvr.id, uvr.user_id, uvr.voc_id, uvr.review_interval, uvr.type
+       from voc_chap_book vcb inner join user_voc_rev uvr on vcb.book_id=#{bookId} and uvr.user_id=#{userId}
+            and vcb.voc_id = uvr.voc_id
+    </select>
+
+    <select id="getUserVocRevBookStatisticByType" resultType="java.lang.Integer">
+        select count(*) as count
+        from voc_chap_book vcb inner join user_voc_rev uvr on vcb.book_id=#{bookId} and uvr.user_id=#{userId}
+            and vcb.voc_id = uvr.voc_id
+        group by uvr.type
+        having uvr.type = #{type}
+    </select>
+
+    <select id="getUserVocRevBookStatisticByInterval" resultType="java.lang.Integer">
+        select count(*)
+        from voc_chap_book vcb inner join user_voc_rev uvr on vcb.book_id=#{bookId} and uvr.user_id=#{userId}
+            and vcb.voc_id = uvr.voc_id
+        <choose>
+            <when test="isFamiliar">
+                where uvr.review_interval >= #{interval}
+            </when>
+            <when test="!isFamiliar">
+                where uvr.review_interval = #{interval}
+            </when>
+        </choose>
+        and uvr.type = 1
+    </select>
+
+    <select id="getUserVocRevOfBookCount" resultType="java.lang.Integer">
+        select count(*) as count
+        from voc_chap_book vcb inner join user_voc_rev uvr on vcb.book_id=#{bookId} and uvr.user_id=#{userId}
+            and vcb.voc_id = uvr.voc_id
+        where vcb.is_deleted = 0 and uvr.is_deleted = 0
+    </select>
+
+</mapper>

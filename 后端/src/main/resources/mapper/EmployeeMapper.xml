@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper SYSTEM "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cskaoyan.wordmemorize.dao.mapper.EmployeeMapper">
+
+    <sql id="employee_colum">
+        e.id, e.name, e.phone_number, e.nick_name, e.avatar, e.last_login_time, e.last_login_ip, er.role_Id
+    </sql>
+
+
+    <resultMap id="employeeInfoResultMap" type="com.cskaoyan.wordmemorize.dao.entity.EmployeeDO" autoMapping="true">
+        <id column="id" property="id"/>
+        <collection property="perms" ofType="String">
+            <id column="permission_code"/>
+        </collection>
+    </resultMap>
+    <select id="getEmployeeInfo" resultMap="employeeInfoResultMap">
+        select <include refid="employee_colum"/>, p.permission_code
+        from employee e
+           inner join employee_role er on e.id=er.employee_id and er.employee_Id = #{employeeId} and e.is_deleted=0 and er.is_deleted=0
+           inner join role_permission rp on er.role_id=rp.role_id and rp.is_deleted=0
+           inner join permission p on p.id=rp.permission_id and p.is_deleted=0
+        order by e.create_time
+    </select>
+
+    <select id="getPermissionAlias" parameterType="java.lang.Long" resultType="java.lang.String">
+        SELECT DISTINCT p.permission_alias
+        FROM employee_role er
+        INNER JOIN role_permission rp ON er.role_id = rp.role_id
+        INNER JOIN permission p ON rp.permission_id = p.id
+        WHERE er.employee_id = #{employeeId}
+        AND er.is_deleted = 0
+        AND rp.is_deleted = 0
+        AND p.is_deleted = 0
+        AND p.permission_alias IS NOT NULL
+        AND p.permission_alias != ''
+    </select>
+</mapper>

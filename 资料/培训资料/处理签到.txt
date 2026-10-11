@@ -1,0 +1,49 @@
+//        // 1. 检查是否已达到最高等级
+//        if (currentLevel >= CommonConstant.CHECK_IN_TYPE_MAX_LEVEL) {
+//            return;
+//        }
+
+        //        // 2. 计算升级条件
+//        int totalDays = statsDO.getTotalDays();
+//        int continuousDays = statsDO.getCurContinuousDays();
+//
+//        // 3. 升级逻辑
+//        int newLevel = currentLevel;
+//        LocalDate newLevelUpDate = levelUpDate;
+
+//        // 3.1 处理累计签到升级(1-6级)
+//        if (currentLevel < CommonConstant.ACCUMULATE_CHECK_IN_TYPE_MAX_LEVEL) {
+//            int requiredDays = currentLevel + 1;
+//            if (totalDays >= requiredDays) {
+//                newLevel = requiredDays;
+//                newLevelUpDate = LocalDate.now();
+//            }
+//        }
+//
+//        // 3.2 处理连续签到升级(7-12级)
+//        if (currentLevel >= CommonConstant.ACCUMULATE_CHECK_IN_TYPE_MAX_LEVEL) {
+//            int requiredDays = currentLevel + 1;
+//            if (continuousDays >= requiredDays) {
+//                newLevel = requiredDays;
+//                newLevelUpDate = LocalDate.now();
+//            }
+//        }
+//
+//        // 3.3 特殊处理：从6级升到7级需要同时满足累计和连续条件
+//        if (currentLevel == CommonConstant.ACCUMULATE_CHECK_IN_TYPE_MAX_LEVEL - 1 &&
+//                totalDays >= CommonConstant.ACCUMULATE_CHECK_IN_TYPE_MAX_LEVEL) {
+//            if (continuousDays >= CommonConstant.ACCUMULATE_CHECK_IN_TYPE_MAX_LEVEL + 1) {
+//                newLevel = CommonConstant.ACCUMULATE_CHECK_IN_TYPE_MAX_LEVEL + 1;
+//                newLevelUpDate = LocalDate.now();
+//            }
+//        }
+//
+//        // 4. 更新用户等级
+//        if (newLevel > currentLevel) {
+//            user.setLevelValue(newLevel);
+//            user.setLevelDate(newLevelUpDate);
+//            userMapper.updateById(user);
+//
+//            // 记录等级变更日志
+//            recordLevelUpgradeLog(userId, currentLevel, newLevel);
+//        }

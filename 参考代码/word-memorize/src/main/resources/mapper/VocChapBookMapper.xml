@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper SYSTEM "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cskaoyan.wordmemorize.dao.mapper.VocChapBookMapper">
+
+    <sql id="voc_chap_book_category_colum">
+        vcb.id, vcb.voc_id, vcb.voc_name, vcb.chapter_id, vcb.chapter_name, vcb.book_id, vcb.book_name,
+        vb.bc_id as category_id, vb.bc_name as category_name
+    </sql>
+    <select id="getVocRelations" resultType="com.cskaoyan.wordmemorize.dao.entity.VocChapBookDO">
+        select <include refid="voc_chap_book_category_colum"/>
+        from voc_chap_book vcb inner join voc_book vb on vcb.book_id=vb.id and vcb.is_deleted=0
+        where vcb.voc_id=#{vocId}
+    </select>
+
+</mapper>

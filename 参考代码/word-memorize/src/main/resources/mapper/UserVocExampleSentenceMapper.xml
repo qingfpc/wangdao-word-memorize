@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper SYSTEM "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cskaoyan.wordmemorize.dao.mapper.UserVocExampleSentenceMapper">
+
+    <select id="getUserVocSentencePage" resultType="com.cskaoyan.wordmemorize.dao.entity.UserVocExampleSentenceDO">
+     select ouvs.id, ouvs.user_id, ouvs.voc_id, ouvs.sentence, ouvs.meaning, ouvs.voc_content
+     from user_voc_sentence ouvs inner join
+        (select voc_id
+        from user_voc_sentence where user_id=#{userId}
+            group by voc_id limit #{limit} offset #{offset}
+        ) tmp on ouvs.user_id=#{userId} and ouvs.voc_id= tmp.voc_id
+     where ouvs.is_deleted = 0
+    </select>
+
+    <select id="getUserVocSentenceCount" resultType="java.lang.Integer">
+        select count(*)
+        from
+            (   select voc_id
+                from user_voc_sentence where user_id=#{userId} and is_deleted = 0
+                group by voc_id
+            ) tmp
+    </select>
+
+</mapper>

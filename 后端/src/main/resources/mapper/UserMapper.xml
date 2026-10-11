@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper SYSTEM "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cskaoyan.wordmemorize.dao.mapper.UserMapper">
+
+    <!-- 定义用户基础字段 -->
+    <sql id="user_base_column">
+        id, open_id, level_name, level_value, head_img, nick_name,
+        third_party_name, phone_number, birthday, email, has_sign_card,
+        voc_count_of_day, last_login_time, last_login_ip, level_date
+    </sql>
+
+    <!-- 用户权限结果映射 -->
+    <resultMap id="userInfoResultMap" type="com.cskaoyan.wordmemorize.dao.entity.UserDO" autoMapping="true">
+        <id column="id" property="id"/>
+        <!-- 映射权限码集合 -->
+        <collection property="privilegeCodes" ofType="String">
+            <result column="privilege_code"/>
+        </collection>
+    </resultMap>
+
+    <!-- 根据用户ID获取用户信息及权限码 -->
+    <select id="getUserInfo" resultType="com.cskaoyan.wordmemorize.dao.entity.UserDO">
+        SELECT * FROM user WHERE id = #{userId}
+    </select>
+
+    <!-- 根据用户ID查询拥有的特权码集合 -->
+    <select id="getPrivilegeCodesList" parameterType="java.lang.Long" resultType="java.lang.String">
+        SELECT
+            lp.privilege_code
+        FROM
+            level_privilege lp
+                INNER JOIN
+            user u ON lp.level_value = u.level_value
+        WHERE
+        u.id = #{userId}
+        AND u.is_deleted = 0
+        AND lp.is_deleted = 0
+        GROUP BY
+        lp.privilege_code
+    </select>
+</mapper>
+    

@@ -1,0 +1,214 @@
+ 
+ 
+ 
+ // 后台：分页查询单词列表
+
+    <sql id="voc_columns">
+        v.id, v.content, v.uk_phonetic, v.us_phonetic, v.us_pronounciation, v.uk_pronounciation
+    </sql>
+    <sql id="voc_meaning_columns">
+        vm.id, vm.voc_id, vm.type, vm.inter_content
+    </sql>
+    <sql id="voc_example_sentence_columns">
+        es.id, es.voc_id, es.content, es.meaning
+    </sql>
+
+    <resultMap id="vocabularyInfoMap" type="com.cskaoyan.wordmemorize.dao.entity.VocDO" autoMapping="true">
+        <id column="id" property="id"/>
+        <collection property="interpretations" ofType="com.cskaoyan.wordmemorize.dao.entity.VocMeaningDO"
+                    select="getVocMeaning" column="id">
+        </collection>
+        <collection property="examples" ofType="com.cskaoyan.wordmemorize.dao.entity.ExampleSentenceDO"
+                    select="getVocExampleSentence" column="id">
+        </collection>
+    </resultMap>
+    <select id="getVocabularyInfo" resultMap="vocabularyInfoMap">
+        <choose>
+            <when test="bookId != null">
+                select
+                <include refid="voc_columns"/>
+                from voc_chap_book vcb inner join voc v on v.id=vcb.voc_id and vcb.book_id=#{bookId}
+                <where>
+                    v.is_deleted=0 and vcb.is_deleted=0
+                    <if test="chapterId != null">
+                        and vcb.chapter_id=#{chapterId}
+                    </if>
+                    <if test="keyword != null and keyword != ''">
+                        and v.content LIKE CONCAT('%', #{keyword}, '%')
+                    </if>
+                </where>
+            </when>
+            <otherwise>
+                select
+                <include refid="voc_columns"/>
+                from voc v
+                where is_deleted=0
+                <if test="keyword != null and keyword != ''">
+                    and v.content LIKE CONCAT('%', #{keyword}, '%')
+                </if>
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="getVocMeaning" resultType="com.cskaoyan.wordmemorize.dao.entity.VocMeaningDO">
+        select
+        <include refid="voc_meaning_columns"/>
+        from voc_meaning vm where vm.voc_id=#{id}
+    </select>
+
+    <select id="getVocExampleSentence" resultType="com.cskaoyan.wordmemorize.dao.entity.ExampleSentenceDO">
+        select
+        <include refid="voc_example_sentence_columns"/>
+        from example_sentence es where es.voc_id=#{id}
+    </select> 
+	
+	对应的Mapper方法: page对象就是MybatisPlus中的Page对象，表示分页参数
+	    Page<VocDO> getVocabularyInfo(@Param("bookId") @Nullable Long bookId
+            , @Param("chapterId") @Nullable Long chapterId,
+                                  @Param("keyword") @Nullable String keyword,
+                                  Page<VocDO> pageInfo);
+----------------------------------------------------------------------------------------------------------------------------------------------
+    移动端: 查询单词详情
+	<resultMap id="vocDetailMap" type="com.cskaoyan.wordmemorize.dao.entity.VocDO" autoMapping="true">
+        <id property="id" column="id"/>
+        <collection property="interpretations" ofType="com.cskaoyan.wordmemorize.dao.entity.VocMeaningDO" autoMapping="true">
+            <id property="id" column="vm_id"/>
+        </collection>
+
+        <collection property="examples" ofType="com.cskaoyan.wordmemorize.dao.entity.ExampleSentenceDO" autoMapping="true">
+            <id property="id" column="es_id"/>
+            <result property="content" column="es_content"/>
+        </collection>
+    </resultMap>
+
+    <select id="getVocDetail" resultMap="vocDetailMap">
+        select v.id, v.content, v.uk_phonetic, v.us_phonetic, v.us_pronounciation, v.uk_pronounciation, vm.id as vm_id, vm.voc_id, vm.type, vm.inter_content
+             ,es.id as es_id, es.voc_id, es.content as es_content, es.meaning, if(uvr.voc_id is null, 0, 1) reviewed, if(unr.voc_id is null, 0, 1) not_remember
+        from voc v
+        inner join voc_meaning vm on vm.voc_id=v.id and v.is_deleted=0 and vm.is_deleted=0
+        inner join example_sentence es on es.voc_id=v.id and es.is_deleted=0
+        left join user_voc_rev uvr on uvr.user_id=#{userId} and uvr.voc_id=v.id and uvr.is_deleted=0
+        left join user_not_remember unr on unr.user_id=#{userId} and unr.voc_id=v.id and unr.is_deleted=0
+        where v.id=#{vocId}
+    </select>
+   
+   Mapper方法: 
+   VocDO getVocDetail(@Param("userId") Long userId, @Param("vocId") Long vocId);
+   这里需要注意的是, 对于单词详情来说，我们还需要查询出该单词是否已经被收藏，因为以上sql连接的表太多，所以并未放在一个sql语句中，我们可以在
+   到user_favorite表中在在根据单词id查询该单词是否已被收藏
+   
+   service层方法：
+    @Override
+    public VocDTO getVocDetail(Long vocId, Long userId) {
+
+        VocDO vocDetail = vocMapper.getVocDetail(userId, vocId);
+        List<UserVocExampleSentenceDO> userVocSentence = vocMapper.getUserVocExampleSentence(userId, vocId);
+        vocDetail.setUserExamples(userVocSentence);
+
+        LambdaQueryWrapper<UserFavoriteDO> favoriteWrapper = Wrappers.lambdaQuery(UserFavoriteDO.class)
+                .eq(UserFavoriteDO::getUserId, userId)
+                .eq(UserFavoriteDO::getVocId, vocId);
+        // 获取用户是否收藏
+        Long count = userFavoriteMapper.selectCount(favoriteWrapper);
+        vocDetail.setFavorite(count > 0 ? 1 : 0);
+        return vocConverter.vocDO2DTO(vocDetail);
+    }
+-----------------------------------------------------------------------------------------------------------------------------------------------	
+	// 移动端: 无章节版书籍词汇列表
+	<resultMap id="vocsInfoContainsUserOwnMapWithoutChapter" type="com.cskaoyan.wordmemorize.dao.entity.VocDO"
+			   autoMapping="true">
+		<id property="id" column="voc_id"/>
+		<collection property="interpretations"
+					ofType="com.cskaoyan.wordmemorize.dao.entity.VocMeaningDO" autoMapping="true">
+			<id column="mid" property="id"/>
+		</collection>
+	</resultMap>
+    <select id="getVocsOfUserBook" resultMap="vocsInfoContainsUserOwnMapWithoutChapter">
+        select bc.voc_id,
+               bc.voc_name as               content,
+               if(uvr.voc_id is null, 0, 1) reviewed,
+               if(unr.voc_id is null, 0, 1) not_remember,
+               vm.id        as              mid,
+               vm.type,
+               vm.inter_content
+        from (select vcb.voc_id, vcb.voc_name, vcb.is_deleted
+              from voc_chap_book vcb
+              where vcb.book_id = #{bookId}
+                and is_deleted = 0
+               ) bc
+                 left join voc_meaning vm on vm.voc_id = bc.voc_id and vm.is_deleted = 0
+                 left join user_voc_rev uvr on uvr.user_id = #{userId} and uvr.voc_id = bc.voc_id and uvr.is_deleted = 0
+                 left join user_not_remember unr
+                           on unr.user_id = #{userId} and unr.voc_id = bc.voc_id and unr.is_deleted = 0
+    </select>
+ 
+     对应的Mapper方法: 需要自己计算偏移量
+	     List<VocDO> getVocsOfUserBook(@Param("userId") Long userId, @Param("bookId") Long bookId
+            , @Param("offset") Integer offset, @Param("limit") Integer limit);
+ 
+ -------------------------------------------------------------------------------------------------------------------------------------
+ 
+ // 移动端：有章节版书籍词汇列表
+  <resultMap id="vocsInfoContainsUserOwnMap" type="com.cskaoyan.wordmemorize.dao.entity.VocChapterDO"
+               autoMapping="true">
+        <id column="chapter_id" property="id"/>
+        <collection property="vocs" ofType="com.cskaoyan.wordmemorize.dao.entity.VocDO" autoMapping="true">
+            <id property="id" column="voc_id"/>
+            <collection property="interpretations"
+                        ofType="com.cskaoyan.wordmemorize.dao.entity.VocMeaningDO" autoMapping="true">
+                <id column="mid" property="id"/>
+            </collection>
+        </collection>
+    </resultMap>
+
+
+    <select id="getChapterVocsOfUserBook" resultMap="vocsInfoContainsUserOwnMap">
+        select vcb.chapter_id,
+               vcb.chapter_name,
+               vcb.voc_id,
+               vcb.voc_name as              content,
+               if(uvr.voc_id is null, 0, 1) reviewed,
+               if(unr.voc_id is null, 0, 1) not_remember,
+               vm.id        as              mid,
+               vm.type,
+               vm.inter_content
+        from (select vcb.chapter_id
+              from voc_chap_book vcb
+              where vcb.book_id = #{bookId}
+                and is_deleted = 0
+              group by vcb.chapter_id) bc
+                 inner join voc_chap_book vcb on vcb.book_id = #{bookId} and bc.chapter_id = vcb.chapter_id and vcb.is_deleted=0
+                 left join voc_meaning vm on vm.voc_id = vcb.voc_id and vm.is_deleted = 0
+                 left join user_voc_rev uvr
+                           on uvr.user_id = #{userId} and uvr.voc_id = vcb.voc_id and uvr.is_deleted = 0
+                 left join user_not_remember unr
+                           on unr.user_id = #{userId} and unr.voc_id = vcb.voc_id and unr.is_deleted = 0
+    </select>	
+	
+    对应的Mapper方法: 需要自己计算分页的偏移量
+    List<VocChapterDO> getChapterVocsOfUserBook(@Param("userId") Long userId, @Param("bookId") Long bookId
+            , @Param("offset") Integer offset, @Param("limit") Integer limit);
+
+-----------------------------------------------------------------------------------------------------------------------	
+	//移动端: 获取收藏列表
+	
+	<resultMap id="getUserFavoritePageMap" type="com.cskaoyan.wordmemorize.dao.entity.UserFavoriteDO" autoMapping="true">
+        <id column="id" property="id"/>
+        <result column="voc_id" property="vocId"/>
+        <collection property="interpretations" ofType="com.cskaoyan.wordmemorize.dao.entity.VocMeaningDO" autoMapping="true">
+            <id column="vm_id" property="id"/>
+            <result column="voc_id" property="vocId"/>
+        </collection>
+    </resultMap>
+    <select id="getUserFavoritePage" resultMap="getUserFavoritePageMap">
+        select ufw.id, ufw.user_id, ufw.voc_id, ufw.voc_content, ufw.selected, vm.id as vm_id, vm.inter_content, vm.type
+        from (select uf.id, uf.user_id, uf.voc_id, uf.voc_content, selected
+              from user_favorite uf
+              where uf.user_id = #{userId} and uf.is_deleted = 0
+             ) as ufw
+                 inner join voc_meaning vm on ufw.voc_id = vm.voc_id
+        where ufw.voc_content like #{keyword}
+    </select>
+	对应Mapper接口方法为：
+	List<UserFavoriteDO> getUserFavoritePage(@Param("userId") Long userId, @Param("keyword") String keyword);
+------------------------------------------------------------------------------------------------------------------------

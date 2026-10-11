@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cskaoyan.wordmemorize.dao.mapper.UserRevStatisticsMapper">
+    <insert id="upsertUserRevStatistics">
+        INSERT INTO user_rev_statistics (
+        id,
+        user_id, voc_new_count, voc_review_count, total_count,
+        forget_count, uncertain_count, known_count, simple_count,
+        study_time, review_date
+        ) VALUES (
+        #{userRevStatisticsDO.id}, #{userRevStatisticsDO.userId}, #{userRevStatisticsDO.vocNewCount}, #{userRevStatisticsDO.vocReviewCount}, #{userRevStatisticsDO.totalCount},
+        #{userRevStatisticsDO.forgetCount}, #{userRevStatisticsDO.uncertainCount}, #{userRevStatisticsDO.knownCount}, #{userRevStatisticsDO.simpleCount},
+        #{userRevStatisticsDO.studyTime}, #{userRevStatisticsDO.reviewDate}
+        )
+        ON DUPLICATE KEY UPDATE
+        voc_new_count = VALUES(voc_new_count),
+        voc_review_count = VALUES(voc_review_count),
+        total_count = VALUES(total_count),
+        forget_count = VALUES(forget_count),
+        uncertain_count = VALUES(uncertain_count),
+        known_count = VALUES(known_count),
+        simple_count = VALUES(simple_count),
+        study_time = VALUES(study_time)
+    </insert>
+</mapper>
